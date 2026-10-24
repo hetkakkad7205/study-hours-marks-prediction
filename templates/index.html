@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Marks Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+
+</head>
+<body>
+
+    <header>
+        <h1>StudySmart</h1>
+        <p>Study smart. Track progress. Reach your goals.</p>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>Study Hours & Marks Predictor</h2>
+            <p>Enter your daily study hours to estimate your marks.</p>
+
+            <form method="POST">
+                <label for="study_hours">Daily study hours</label>
+                <input
+                    type="number"
+                    id="study_hours"
+                    name="study_hours"
+                    min="0"
+                    max="24"
+                    step="0.5"
+                    value="{{ study_hours if study_hours is not none else '' }}"
+                    placeholder="Example: 5"
+                    required
+                >
+
+                <button type="submit">Predict Marks</button>
+            </form>
+
+            {% if prediction is not none %}
+                <div class="result">
+                    <h3>Estimated Marks</h3>
+                    <p class="score">{{ prediction }} / 100</p>
+                    <p>Study hours entered: {{ study_hours }}</p>
+                    <small>This is a model estimate, not a guaranteed result.</small>
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Study Hours vs Marks</h2>
+            <canvas id="marksChart"></canvas>
+        </section>
+    </main>
+
+    <script>
+const hours = {{ chart_hours | tojson | safe }};
+const marks = {{ chart_marks | tojson | safe }};
+
+new Chart(document.getElementById("marksChart"), {
+    type: "scatter",
+    data: {
+        datasets: [{
+            label: "Study hours and marks",
+            data: hours.map((hour, i) => ({
+                x: hour,
+                y: marks[i]
+            }))
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: "Study Hours"
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: "Marks"
+                },
+                min: 0,
+                max: 100
+            }
+        }
+    }
+});
+</script>
+</body>
+</html>
